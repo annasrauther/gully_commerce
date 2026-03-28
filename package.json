@@ -9,8 +9,6 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "@shopify/polaris": "^13.9.5",
-    "@shopify/polaris-icons": "^9.3.1",
     "@supabase/supabase-js": "^2.100.1",
     "framer-motion": "^12.38.0",
     "lucide-react": "^1.7.0",
