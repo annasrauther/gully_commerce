@@ -120,7 +120,35 @@ export default function CreateListingPage() {
       
       if (formData.images[0] && formData.images[0].startsWith('blob:')) {
         const response = await fetch(formData.images[0]);
-        const blob = await response.blob();
+        let blob = await response.blob();
+
+        // High UX: Client-side compression
+        if (blob.size > 1024 * 1024) { // > 1MB
+           const img = new (window as any).Image();
+           img.src = formData.images[0];
+           await new Promise(resolve => img.onload = resolve);
+           
+           const canvas = document.createElement('canvas');
+           const MAX_WIDTH = 1200;
+           let width = img.width;
+           let height = img.height;
+           
+           if (width > MAX_WIDTH) {
+             height *= MAX_WIDTH / width;
+             width = MAX_WIDTH;
+           }
+           
+           canvas.width = width;
+           canvas.height = height;
+           const ctx = canvas.getContext('2d');
+           ctx?.drawImage(img, 0, 0, width, height);
+           
+           const compressedBlob = await new Promise<Blob>((resolve) => {
+             canvas.toBlob((b) => resolve(b!), 'image/jpeg', 0.8);
+           });
+           blob = compressedBlob;
+        }
+
         const fileExt = blob.type.split('/')[1] || 'jpg';
         const fileName = `${user.id}/${Date.now()}.${fileExt}`;
         
