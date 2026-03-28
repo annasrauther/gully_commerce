@@ -97,9 +97,9 @@ export default function ProfilePage() {
 
       if (pError) throw pError
 
-      toast.success('Profile updated!')
+      toast.success('Profile Updated!')
     } catch (error: any) {
-      toast.error(error.message || 'Failed to save profile')
+      toast.error(error.message || 'Failed to update profile')
     } finally {
       setIsSaving(false)
     }
@@ -114,17 +114,17 @@ export default function ProfilePage() {
 
   return (
     <div className="flex-1 bg-white max-w-[420px] mx-auto w-full min-h-screen flex flex-col font-sans pb-10">
-      <header className="px-6 py-6 flex items-center justify-between sticky top-0 bg-white/90 backdrop-blur-xl z-30 border-b border-zinc-200">
+      <header className="px-6 py-6 flex items-center justify-between sticky top-0 bg-white/90 backdrop-blur-xl z-30 border-b border-zinc-300">
         <div className="flex items-center gap-3">
-          <Link href="/dashboard" className="w-12 h-12 flex items-center justify-center bg-white rounded-full border border-zinc-200 shadow-sm active:scale-95 transition-all group">
+          <Link href="/dashboard" className="w-12 h-12 flex items-center justify-center bg-white rounded-full border border-zinc-300 transition-all active:scale-95 group">
             <ArrowLeft className="w-6 h-6 text-black group-hover:-translate-x-1 transition-transform" />
           </Link>
-          <h1 className="text-xl font-black tracking-tighter text-black uppercase">Profile</h1>
+          <h1 className="text-xl font-black tracking-[-0.05em] text-black uppercase">Profile</h1>
         </div>
-        <button 
+        <button
           onClick={handleSave}
           disabled={isSaving}
-          className="bg-black text-white px-6 py-3 rounded-full text-xs font-black flex items-center gap-2 active:scale-95 transition-all disabled:opacity-50 shadow-lg shadow-black/10"
+          className="bg-black text-white px-6 py-3 rounded-full text-sm font-black flex items-center gap-2 active:scale-95 transition-all disabled:opacity-50 shadow-2xl shadow-black/20"
         >
           {isSaving ? <span className="w-3 h-3 border-2 border-white/20 border-t-white rounded-full animate-spin" /> : <Save className="w-4 h-4" />}
           Save Changes
@@ -141,9 +141,9 @@ export default function ProfilePage() {
           <div className="flex flex-col gap-3">
             <div className="flex flex-col gap-1.5">
               <label className="text-[10px] font-black text-black uppercase tracking-wider pl-1 font-sans">Store Name</label>
-              <input 
-                type="text" 
-                value={shopName} 
+              <input
+                type="text"
+                value={shopName}
                 onChange={(e) => setShopName(e.target.value)}
                 className="w-full h-18 px-6 bg-white border-2 border-zinc-200 focus:border-black rounded-2xl text-lg font-black outline-none transition-all text-black shadow-sm placeholder:text-zinc-400"
                 placeholder="Shop Name"
@@ -168,9 +168,9 @@ export default function ProfilePage() {
           <div className="flex flex-col gap-4">
             <div className="flex flex-col gap-1.5">
               <label className="text-[10px] font-black text-black uppercase tracking-wider pl-1">UPI ID (VPA)</label>
-              <input 
-                type="text" 
-                value={upiId} 
+              <input
+                type="text"
+                value={upiId}
                 onChange={(e) => setUpiId(e.target.value)}
                 className="w-full h-18 px-6 bg-white border-2 border-zinc-200 focus:border-black rounded-2xl text-lg font-black outline-none transition-all text-uber-green shadow-sm placeholder:text-zinc-400"
                 placeholder="name@upi"
@@ -180,8 +180,8 @@ export default function ProfilePage() {
               <label className="text-[10px] font-black text-black uppercase tracking-wider pl-1">Delivery Pincodes</label>
               <div className="relative">
                 <Plus className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-black" strokeWidth={2.5} />
-                <input 
-                  type="tel" 
+                <input
+                  type="tel"
                   value={pincode}
                   onChange={(e) => handleAddPincode(e.target.value)}
                   className="w-full h-18 px-6 pl-14 bg-white border-2 border-zinc-200 focus:border-black rounded-2xl text-lg font-black outline-none transition-all text-black shadow-sm placeholder:text-zinc-400"
@@ -191,7 +191,7 @@ export default function ProfilePage() {
               <div className="flex flex-wrap gap-2 mt-1">
                 <AnimatePresence>
                   {selectedPincodes.map(pin => (
-                    <motion.div 
+                    <motion.div
                       key={pin}
                       initial={{ opacity: 0, scale: 0.9 }}
                       animate={{ opacity: 1, scale: 1 }}

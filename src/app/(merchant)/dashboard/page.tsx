@@ -119,10 +119,12 @@ export default function DashboardPage() {
         </Link>
 
         <div className="flex flex-col gap-3">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-black text-black">Recent Listings</h2>
-            <Link href="/warehouse" className="text-[10px] font-black text-uber-green">View All</Link>
-          </div>
+          <div className="flex items-center justify-between px-2 mb-2">
+          <h2 className="text-3xl font-black text-black tracking-[-0.05em]">Recent Listings</h2>
+          <button className="px-4 py-1.5 bg-[#06c167]/10 text-[#06c167] rounded-full text-[11px] font-black uppercase tracking-[0.1em] active:scale-95 transition-all">
+            View All
+          </button>
+        </div>
           <div className="grid grid-cols-2 gap-3">
             {products.length > 0 ? products.map((p, idx) => (
               <motion.div 
@@ -133,20 +135,22 @@ export default function DashboardPage() {
                 className="flex flex-col gap-2 cursor-pointer active:scale-95 transition-all"
                 onClick={() => setSelectedProduct(p)}
               >
-                <div className="aspect-square bg-white rounded-2xl overflow-hidden relative border border-zinc-200 shadow-sm">
-                  <img src={p.image_url} alt={p.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
-                  <div className="absolute top-2 right-2" onClick={(e) => e.stopPropagation()}>
-                    <Switch.Root checked={p.in_stock} className={`w-9 h-5.5 rounded-full relative transition-colors ${p.in_stock ? 'bg-uber-green' : 'bg-zinc-300'}`}>
-                      <Switch.Thumb className={`block w-4 h-4 bg-white rounded-full transition-transform translate-x-1 ${p.in_stock ? 'translate-x-[18px]' : ''}`} />
+                <div className="aspect-square bg-white rounded-[24px] overflow-hidden relative border border-zinc-200 group-active:scale-[0.98] transition-all">
+                  <img src={p.image_url} alt={p.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                  <div className="absolute top-3 right-3" onClick={(e) => e.stopPropagation()}>
+                    <Switch.Root checked={p.in_stock} className={`w-10 h-6 rounded-full relative transition-colors shadow-sm ${p.in_stock ? 'bg-[#06c167]' : 'bg-zinc-300'}`}>
+                      <Switch.Thumb className={`block w-4.5 h-4.5 bg-white rounded-full transition-transform translate-x-1 ${p.in_stock ? 'translate-x-[20px]' : ''}`} />
                     </Switch.Root>
                   </div>
                 </div>
-                <h3 className="font-black text-[13px] tracking-tight text-black truncate px-1 mt-1">{p.title}</h3>
-                <p className="text-uber-green font-black text-[13px] px-1">₹{p.price}</p>
+                <div className="flex flex-col gap-0.5 px-1">
+                  <h3 className="font-black text-[17px] text-black tracking-[-0.02em] truncate">{p.title}</h3>
+                  <p className="text-[#06c167] font-black text-xl tracking-tighter">₹{p.price}</p>
+                </div>
               </motion.div>
             )) : (
-            <div className="col-span-2 py-20 text-center flex flex-col items-center gap-6 bg-zinc-50 rounded-[32px] border border-zinc-200 shadow-inner">
-              <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center border border-zinc-100 shadow-sm">
+            <div className="col-span-2 py-20 text-center flex flex-col items-center gap-6 bg-zinc-50 rounded-[32px] border border-zinc-200">
+              <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center border border-zinc-100">
                 <Store className="w-8 h-8 text-black/20" />
               </div>
               <div className="flex flex-col gap-2">

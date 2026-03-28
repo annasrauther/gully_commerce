@@ -3,7 +3,6 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { DM_Sans } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "react-hot-toast";
-import BottomNav from "@/components/BottomNav";
 
 const dmSans = DM_Sans({
   subsets: ["latin"],
@@ -41,10 +40,9 @@ export default function RootLayout({
         className={`${dmSans.variable} h-full antialiased`}
       >
         <body className="min-h-full flex flex-col font-sans select-none touch-pan-y active:bg-transparent">
-          <main className="flex-1 flex flex-col pb-24">
+          <main className="flex-1 flex flex-col">
             {children}
           </main>
-          <BottomNav />
           <Toaster position="bottom-center" />
         </body>
       </html>

@@ -97,14 +97,14 @@ export default function CreateListingPage() {
 
   return (
     <div className="flex-1 bg-white max-w-[420px] mx-auto w-full min-h-screen flex flex-col pb-32 font-sans">
-      <header className="px-6 py-6 flex items-center gap-4 sticky top-0 bg-white/90 backdrop-blur-xl z-30 border-b border-zinc-200">
-        <Link href="/dashboard" className="w-12 h-12 flex items-center justify-center bg-white rounded-full border border-zinc-200 shadow-sm transition-all active:scale-90 group">
+      <header className="px-6 py-6 flex items-center gap-4 sticky top-0 bg-white/90 backdrop-blur-xl z-30 border-b border-zinc-300">
+        <Link href="/dashboard" className="w-12 h-12 flex items-center justify-center bg-white rounded-full border border-zinc-300 shadow-sm transition-all active:scale-95 group">
           <ArrowLeft className="w-6 h-6 text-black group-hover:-translate-x-1 transition-transform" />
         </Link>
-        <h1 className="text-xl font-black tracking-tighter text-black uppercase">Gully Commerce</h1>
+        <h1 className="text-3xl font-black tracking-[-0.05em] text-black uppercase">Create</h1>
       </header>
       <main className="p-6 flex flex-col gap-8">
-        <div onClick={() => fileInputRef.current?.click()} className="aspect-[4/3] bg-zinc-50 rounded-[32px] border-2 border-dashed border-zinc-300 flex flex-col items-center justify-center gap-3 overflow-hidden relative shadow-inner group cursor-pointer active:scale-[0.98] transition-all">
+        <div onClick={() => fileInputRef.current?.click()} className="aspect-[4/3] bg-white rounded-[32px] border-2 border-dashed border-zinc-300 flex flex-col items-center justify-center gap-3 overflow-hidden relative shadow-sm group cursor-pointer active:scale-[0.98] transition-all">
           {image ? <img src={image} className="w-full h-full object-cover" /> : <><Camera className="w-10 h-10 text-black group-hover:scale-110 transition-transform" /><p className="font-black text-black text-[11px] uppercase tracking-[0.2em]">Tap to Upload</p></>}
           <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={(e) => {
             const file = e.target.files?.[0]
@@ -199,7 +199,7 @@ export default function CreateListingPage() {
           </AnimatePresence>
         </div>
       </main>
-      <footer className="fixed bottom-0 left-1/2 -translate-x-1/2 max-w-[420px] w-full p-6 bg-white border-t border-zinc-50 shadow-2xl z-40">
+      <footer className="fixed bottom-0 left-1/2 -translate-x-1/2 max-w-[420px] w-full p-6 bg-white border-t border-zinc-200 z-40">
         {!showPreview ? (
           <button 
             onClick={() => {
@@ -209,7 +209,7 @@ export default function CreateListingPage() {
               }
               setShowPreview(true)
             }}
-            className="w-full bg-black text-white h-16 rounded-2xl font-black text-lg active:scale-[0.98] transition-all shadow-xl shadow-black/20"
+            className="w-full bg-black text-white h-18 rounded-full font-black text-xl active:scale-[0.98] transition-all shadow-2xl shadow-black/20"
           >
             Show Preview
           </button>
@@ -217,13 +217,13 @@ export default function CreateListingPage() {
           <div className="flex gap-4">
             <button 
               onClick={() => setShowPreview(false)}
-              className="px-8 bg-zinc-50 text-black h-16 rounded-2xl font-black active:scale-[0.98] transition-all border border-zinc-200"
+              className="px-8 bg-zinc-50 text-black h-18 rounded-full font-black active:scale-[0.98] transition-all border border-zinc-200"
             >
               Edit
             </button>
             <button 
               onClick={handleListNow} 
-              className="flex-1 bg-black text-white h-16 rounded-2xl font-black text-lg active:scale-[0.98] transition-all shadow-xl shadow-black/20"
+              className="flex-1 bg-black text-white h-18 rounded-full font-black text-xl active:scale-[0.98] transition-all shadow-2xl shadow-black/20"
             >
               List Item
             </button>

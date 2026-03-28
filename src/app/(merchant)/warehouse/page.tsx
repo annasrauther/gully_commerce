@@ -46,22 +46,22 @@ export default function WarehousePage() {
 
   return (
     <div className="flex-1 bg-white max-w-[420px] mx-auto w-full min-h-screen flex flex-col font-sans">
-      <header className="px-6 py-6 flex items-center gap-4 sticky top-0 bg-white/90 backdrop-blur-xl z-30 border-b border-zinc-200">
-        <Link href="/dashboard" className="w-12 h-12 flex items-center justify-center bg-white rounded-full border border-zinc-200 shadow-sm transition-all active:scale-90 group">
+      <header className="px-6 py-6 flex items-center gap-4 sticky top-0 bg-white/90 backdrop-blur-xl z-30 border-b border-zinc-300">
+        <Link href="/dashboard" className="w-12 h-12 flex items-center justify-center bg-white rounded-none border border-zinc-200 transition-all active:scale-95 group">
           <ArrowLeft className="w-6 h-6 text-black group-hover:-translate-x-1 transition-transform" />
         </Link>
-        <h1 className="text-xl font-black tracking-tighter text-black uppercase">Gully Commerce</h1>
+        <h1 className="text-3xl font-black tracking-[-0.05em] text-black uppercase">Warehouse</h1>
       </header>
       <Tabs.Root defaultValue="products" className="flex-1 flex flex-col">
         <Tabs.List className="flex px-6 border-b border-zinc-200 bg-white">
-          <Tabs.Trigger value="products" className="flex-1 py-4 text-[11px] font-black uppercase tracking-[0.2em] text-zinc-500 data-[state=active]:border-black data-[state=active]:text-black border-b-[3px] border-transparent transition-all">Products</Tabs.Trigger>
-          <Tabs.Trigger value="leads" className="flex-1 py-4 text-[11px] font-black uppercase tracking-[0.2em] text-zinc-500 data-[state=active]:border-black data-[state=active]:text-black border-b-[3px] border-transparent transition-all">Leads</Tabs.Trigger>
+          <Tabs.Trigger value="products" className="flex-1 py-4 text-[11px] font-black uppercase tracking-[0.2em] text-zinc-400 data-[state=active]:border-black data-[state=active]:text-black border-b-[3px] border-transparent transition-all">Products</Tabs.Trigger>
+          <Tabs.Trigger value="leads" className="flex-1 py-4 text-[11px] font-black uppercase tracking-[0.2em] text-zinc-400 data-[state=active]:border-black data-[state=active]:text-black border-b-[3px] border-transparent transition-all">Leads</Tabs.Trigger>
         </Tabs.List>
         <Tabs.Content value="products" className="flex-1 p-4 flex flex-col gap-3">
           {products.length > 0 ? products.map(p => (
             <div
               key={p.id}
-              className="bg-white rounded-[24px] border border-zinc-200 p-4 flex gap-4 cursor-pointer active:scale-[0.98] transition-all shadow-sm group"
+              className="bg-white rounded-[24px] border border-zinc-200 p-4 flex gap-4 cursor-pointer active:scale-[0.98] transition-all group"
               onClick={() => setSelectedProduct(p)}
             >
               <div className="w-20 h-20 rounded-2xl overflow-hidden shadow-sm flex-shrink-0">
