@@ -1,5 +1,6 @@
 'use client'
 
+import { useUser } from '@clerk/nextjs'
 import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowLeft, Camera } from 'lucide-react'
@@ -10,6 +11,7 @@ import { useStore } from '@/lib/store'
 import { supabase } from '@/lib/supabase'
 
 export default function CreateListingPage() {
+  const { user, isLoaded } = useUser()
   const [image, setImage] = useState<string | null>(null)
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [title, setTitle] = useState('')
@@ -22,6 +24,12 @@ export default function CreateListingPage() {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const router = useRouter()
   const { setLoading } = useStore()
+
+  useEffect(() => {
+    if (isLoaded && !user) {
+      router.push('/login')
+    }
+  }, [isLoaded, user, router])
 
   const handleMagicGenerate = () => {
     // High-quality templates that utilize both title and price
@@ -44,15 +52,12 @@ export default function CreateListingPage() {
   // Removed auto-generation logic to prioritize manual entry as requested
 
   const handleListNow = async () => {
-    if (!title || !price || !imageFile) {
+    if (!title || !price || !imageFile || !user) {
       toast.error('Details missing')
       return
     }
     setLoading(true)
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('Not authenticated')
-
       // 1. Upload Image
       const fileExt = imageFile.name.split('.').pop()
       const fileName = `${user.id}/${Date.now()}.${fileExt}`
@@ -92,15 +97,15 @@ export default function CreateListingPage() {
 
   return (
     <div className="flex-1 bg-white max-w-[420px] mx-auto w-full min-h-screen flex flex-col pb-32 font-sans">
-      <header className="p-6 flex items-center gap-4 sticky top-0 bg-white/80 backdrop-blur-md z-10">
-        <Link href="/dashboard" className="w-12 h-12 flex items-center justify-center -ml-3 bg-zinc-50 rounded-2xl border border-zinc-100 shadow-sm">
-          <ArrowLeft className="w-6 h-6 text-black" />
+      <header className="px-6 py-6 flex items-center gap-4 sticky top-0 bg-white/90 backdrop-blur-xl z-30 border-b border-zinc-200">
+        <Link href="/dashboard" className="w-12 h-12 flex items-center justify-center bg-white rounded-full border border-zinc-200 shadow-sm transition-all active:scale-90 group">
+          <ArrowLeft className="w-6 h-6 text-black group-hover:-translate-x-1 transition-transform" />
         </Link>
         <h1 className="text-xl font-black tracking-tighter text-black uppercase">Gully Commerce</h1>
       </header>
       <main className="p-6 flex flex-col gap-8">
-        <div onClick={() => fileInputRef.current?.click()} className="aspect-[3/2] bg-zinc-50 rounded-3xl border-2 border-dashed border-zinc-200 flex flex-col items-center justify-center gap-2 overflow-hidden relative shadow-inner">
-          {image ? <img src={image} className="w-full h-full object-cover" /> : <><Camera className="w-8 h-8 text-black" /><p className="font-black text-black uppercase tracking-widest text-[10px]">Tap to upload</p></>}
+        <div onClick={() => fileInputRef.current?.click()} className="aspect-[4/3] bg-zinc-50 rounded-[32px] border-2 border-dashed border-zinc-300 flex flex-col items-center justify-center gap-3 overflow-hidden relative shadow-inner group cursor-pointer active:scale-[0.98] transition-all">
+          {image ? <img src={image} className="w-full h-full object-cover" /> : <><Camera className="w-10 h-10 text-black group-hover:scale-110 transition-transform" /><p className="font-black text-black text-[11px] uppercase tracking-[0.2em]">Tap to Upload</p></>}
           <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={(e) => {
             const file = e.target.files?.[0]
             if (file) {
@@ -112,19 +117,19 @@ export default function CreateListingPage() {
           }} />
         </div>
         <div className="flex flex-col gap-6">
-          <div className="flex flex-col gap-2">
-            <p className="text-[10px] font-black text-zinc-600 uppercase tracking-widest pl-1">Product Title</p>
-            <input type="text" placeholder="What are you selling?" className="w-full bg-white border-2 border-zinc-100 focus:border-black outline-none px-5 py-4 rounded-xl text-lg font-bold transition-all placeholder:text-zinc-500 text-black tracking-tight" value={title} onChange={(e) => setTitle(e.target.value)} />
+          <div className="flex flex-col gap-3">
+            <p className="text-[10px] font-black text-zinc-600 uppercase tracking-[0.2em] pl-1">Product Title</p>
+            <input type="text" placeholder="What are you selling?" className="w-full h-18 bg-white border-2 border-zinc-200 focus:border-black outline-none px-6 rounded-2xl text-xl font-black transition-all placeholder:text-zinc-400 text-black tracking-tight" value={title} onChange={(e) => setTitle(e.target.value)} />
           </div>
 
-          <div className="flex flex-col gap-2">
-            <p className="text-[10px] font-black text-zinc-600 uppercase tracking-widest pl-1">Price (₹)</p>
-            <input type="number" placeholder="Enter amount" className="w-full bg-white border-2 border-zinc-100 focus:border-black outline-none px-5 py-4 rounded-xl text-lg font-bold transition-all placeholder:text-zinc-500 text-black" value={price} onChange={(e) => setPrice(e.target.value)} />
+          <div className="flex flex-col gap-3">
+            <p className="text-[10px] font-black text-zinc-600 uppercase tracking-[0.2em] pl-1">Price (₹)</p>
+            <input type="number" placeholder="Enter amount" className="w-full h-18 bg-white border-2 border-zinc-200 focus:border-black outline-none px-6 rounded-2xl text-xl font-black transition-all placeholder:text-zinc-400 text-black" value={price} onChange={(e) => setPrice(e.target.value)} />
           </div>
 
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-3">
             <div className="flex items-center justify-between px-1 min-h-[20px]">
-              <p className="text-[10px] font-black text-zinc-600 uppercase tracking-widest">Description</p>
+              <p className="text-[10px] font-black text-zinc-600 uppercase tracking-[0.2em]">Description</p>
               <AnimatePresence>
                 {title && price && (
                   <motion.button 
@@ -133,19 +138,19 @@ export default function CreateListingPage() {
                     exit={{ opacity: 0, scale: 0.9 }}
                     onClick={handleMagicGenerate}
                     disabled={isMagicLoading}
-                    className="flex items-center gap-1.5 text-uber-green font-black text-[10px] uppercase tracking-widest active:scale-95 transition-all disabled:opacity-50"
+                    className="flex items-center gap-2 px-3 py-1.5 bg-white border border-zinc-200 shadow-sm rounded-full text-uber-green font-black text-[9px] uppercase tracking-[0.1em] active:scale-95 transition-all disabled:opacity-50"
                   >
                     {isMagicLoading ? (
                       <span className="w-3 h-3 border-2 border-uber-green/20 border-t-uber-green rounded-full animate-spin" />
                     ) : (
-                      <span className="text-lg leading-none">✨</span>
+                      <span className="text-sm leading-none">✨</span>
                     )}
                     {description ? 'Regenerate' : 'Magic Generate'}
                   </motion.button>
                 )}
               </AnimatePresence>
             </div>
-            <textarea placeholder="Tell your customers about it..." rows={4} className="w-full bg-white border-2 border-zinc-100 focus:border-black outline-none px-5 py-4 rounded-xl text-lg font-semibold transition-all placeholder:text-zinc-500 text-black resize-none leading-snug" value={description} onChange={(e) => setDescription(e.target.value)} />
+            <textarea placeholder="Tell your customers about it..." rows={4} className="w-full bg-white border-2 border-zinc-200 focus:border-black outline-none px-6 py-5 rounded-2xl text-lg font-bold transition-all placeholder:text-zinc-400 text-black resize-none leading-snug" value={description} onChange={(e) => setDescription(e.target.value)} />
           </div>
 
 
@@ -220,7 +225,7 @@ export default function CreateListingPage() {
               onClick={handleListNow} 
               className="flex-1 bg-black text-white h-16 rounded-2xl font-black text-lg active:scale-[0.98] transition-all shadow-xl shadow-black/20"
             >
-              List Now
+              List Item
             </button>
           </div>
         )}

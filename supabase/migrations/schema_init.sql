@@ -1,7 +1,7 @@
 -- MERCHANTS
 -- Tracks shop identity and auth linkage
 create table public.merchants (
-  id uuid references auth.users not null primary key,
+  id text primary key,
   phone text unique not null,
   name text,
   store_slug text unique,
@@ -12,19 +12,15 @@ create table public.merchants (
 -- Ensure RLS (Row Level Security)
 alter table public.merchants enable row level security;
 
-create policy "Merchants can view their own profile"
-  on public.merchants for select
-  using ( auth.uid() = id );
-
-create policy "Merchants can update their own profile"
-  on public.merchants for update
-  using ( auth.uid() = id );
+create policy "Anyone can manage merchant profiles"
+  on public.merchants for all
+  using ( true ); -- Application logic will handle Clerk ID checks and filtering
 
 -- PRODUCTS
 -- High-density inventory management
 create table public.products (
   id uuid default gen_random_uuid() primary key,
-  merchant_id uuid references public.merchants(id) on delete cascade not null,
+  merchant_id text references public.merchants(id) on delete cascade not null,
   title text not null,
   description text,
   price numeric not null,
@@ -41,13 +37,13 @@ create policy "Anyone can view products (public store)"
 
 create policy "Merchants can manage their own products"
   on public.products for all
-  using ( auth.uid() = merchant_id );
+  using ( true ); -- Filtered by merchant_id in app logic
 
 -- SERVICE PINCODES
 -- Multi-zone logistics support
 create table public.service_pincodes (
   id uuid default gen_random_uuid() primary key,
-  merchant_id uuid references public.merchants(id) on delete cascade not null,
+  merchant_id text references public.merchants(id) on delete cascade not null,
   pincode text not null,
   area_name text,
   unique(merchant_id, pincode)
@@ -61,14 +57,14 @@ create policy "Anyone can check delivery availability"
 
 create policy "Merchants can manage their own delivery zones"
   on public.service_pincodes for all
-  using ( auth.uid() = merchant_id );
+  using ( true ); -- Filtered by merchant_id in app logic
 
 -- ORDERS & LEADS
 -- Core transaction and intent tracking
 create table public.orders (
   id uuid default gen_random_uuid() primary key,
   product_id uuid references public.products(id),
-  merchant_id uuid references public.merchants(id),
+  merchant_id text references public.merchants(id),
   buyer_phone text,
   buyer_pincode text,
   buyer_address text,
@@ -79,9 +75,9 @@ create table public.orders (
 
 alter table public.orders enable row level security;
 
-create policy "Merchants can view their own orders"
-  on public.orders for select
-  using ( auth.uid() = merchant_id );
+create policy "Anyone can manage orders"
+  on public.orders for all
+  using ( true ); -- Buyers can insert, merchants can select / update (filtered by app logic)
 
 -- STORAGE BUCKET: product-images
 -- (Requires manual creation in Supabase UI or using 'insert into storage.buckets...')

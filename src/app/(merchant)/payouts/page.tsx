@@ -1,19 +1,62 @@
 'use client'
 
-import { useState } from 'react'
+import { useUser, useClerk } from '@clerk/nextjs'
+import { useState, useEffect } from 'react'
 import { ArrowLeft, LogOut, Save, Plus, X, Globe, MapPin, Store } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { toast } from 'react-hot-toast'
 import { motion, AnimatePresence } from 'framer-motion'
+import { supabase } from '@/lib/supabase'
 
 export default function ProfilePage() {
+  const { user, isLoaded } = useUser()
+  const { signOut } = useClerk()
   const router = useRouter()
-  const [shopName, setShopName] = useState('Gully Store')
-  const [upiId, setUpiId] = useState('annas@upi')
+  const [shopName, setShopName] = useState('')
+  const [upiId, setUpiId] = useState('')
   const [pincode, setPincode] = useState('')
-  const [selectedPincodes, setSelectedPincodes] = useState<string[]>(['400706', '400705'])
+  const [selectedPincodes, setSelectedPincodes] = useState<string[]>([])
   const [isSaving, setIsSaving] = useState(false)
+  const [host, setHost] = useState('')
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setHost(window.location.host)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (isLoaded && !user) {
+      router.push('/login')
+      return
+    }
+
+    if (user) {
+      const fetchProfile = async () => {
+        const { data: merchant }: any = await supabase
+          .from('merchants')
+          .select('*')
+          .eq('id', user.id)
+          .single()
+
+        if (merchant) {
+          setShopName(merchant.name || '')
+          setUpiId(merchant.upi_id || '')
+        }
+
+        const { data: pincodes }: any = await supabase
+          .from('service_pincodes')
+          .select('pincode')
+          .eq('merchant_id', user.id)
+
+        if (pincodes) {
+          setSelectedPincodes(pincodes.map((p: any) => p.pincode))
+        }
+      }
+      fetchProfile()
+    }
+  }, [isLoaded, user, router])
 
   const handleAddPincode = (val: string) => {
     const cleaned = val.replace(/\D/g, '').slice(0, 6)
@@ -31,28 +74,60 @@ export default function ProfilePage() {
   }
 
   const handleSave = async () => {
+    if (!user) return
     setIsSaving(true)
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    toast.success('Profile updated!')
-    setIsSaving(false)
+    try {
+      // 1. Update Merchant
+      const { error: mError } = await (supabase
+        .from('merchants') as any)
+        .update({
+          name: shopName.trim(),
+          upi_id: upiId.trim(),
+          store_slug: shopName.toLowerCase().trim().replace(/\s+/g, '-')
+        })
+        .eq('id', user.id)
+
+      if (mError) throw mError
+
+      // 2. Update Pincodes
+      await (supabase.from('service_pincodes') as any).delete().eq('merchant_id', user.id)
+      const { error: pError } = await (supabase
+        .from('service_pincodes') as any)
+        .insert(selectedPincodes.map(p => ({ merchant_id: user.id, pincode: p })))
+
+      if (pError) throw pError
+
+      toast.success('Profile updated!')
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to save profile')
+    } finally {
+      setIsSaving(false)
+    }
   }
+
+  const handleSignOut = async () => {
+    await signOut()
+    router.push('/login')
+  }
+
+  if (!isLoaded || !user) return null
 
   return (
     <div className="flex-1 bg-white max-w-[420px] mx-auto w-full min-h-screen flex flex-col font-sans pb-10">
-      <header className="p-4 flex items-center justify-between sticky top-0 bg-white/90 backdrop-blur-md z-30 border-b border-zinc-100">
+      <header className="px-6 py-6 flex items-center justify-between sticky top-0 bg-white/90 backdrop-blur-xl z-30 border-b border-zinc-200">
         <div className="flex items-center gap-3">
-          <Link href="/dashboard" className="w-10 h-10 flex items-center justify-center bg-zinc-50 rounded-xl border border-zinc-100 shadow-sm active:scale-95 transition-all">
-            <ArrowLeft className="w-5 h-5 text-black" />
+          <Link href="/dashboard" className="w-12 h-12 flex items-center justify-center bg-white rounded-full border border-zinc-200 shadow-sm active:scale-95 transition-all group">
+            <ArrowLeft className="w-6 h-6 text-black group-hover:-translate-x-1 transition-transform" />
           </Link>
           <h1 className="text-xl font-black tracking-tighter text-black uppercase">Profile</h1>
         </div>
         <button 
           onClick={handleSave}
           disabled={isSaving}
-          className="bg-black text-white px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 active:scale-95 transition-all disabled:opacity-50"
+          className="bg-black text-white px-6 py-3 rounded-full text-xs font-black flex items-center gap-2 active:scale-95 transition-all disabled:opacity-50 shadow-lg shadow-black/10"
         >
-          {isSaving ? <span className="w-3 h-3 border-2 border-white/20 border-t-white rounded-full animate-spin" /> : <Save className="w-3.5 h-3.5" />}
-          Save
+          {isSaving ? <span className="w-3 h-3 border-2 border-white/20 border-t-white rounded-full animate-spin" /> : <Save className="w-4 h-4" />}
+          Save Changes
         </button>
       </header>
 
@@ -60,25 +135,25 @@ export default function ProfilePage() {
         {/* Shop Section */}
         <section className="flex flex-col gap-4">
           <div className="flex items-center gap-2 mb-1">
-            <Store className="w-4 h-4 text-zinc-400" />
-            <h2 className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Shop Identity</h2>
+            <Store className="w-4 h-4 text-zinc-400" strokeWidth={2.5} />
+            <h2 className="text-[10px] font-black text-zinc-600 uppercase tracking-[0.2em]">Shop Identity</h2>
           </div>
           <div className="flex flex-col gap-3">
             <div className="flex flex-col gap-1.5">
-              <label className="text-[10px] font-bold text-black uppercase tracking-wider pl-1">Store Name</label>
+              <label className="text-[10px] font-black text-black uppercase tracking-wider pl-1 font-sans">Store Name</label>
               <input 
                 type="text" 
                 value={shopName} 
                 onChange={(e) => setShopName(e.target.value)}
-                className="w-full p-4 bg-zinc-50 border border-transparent focus:border-black rounded-xl text-base font-bold outline-none transition-all text-black"
+                className="w-full h-18 px-6 bg-white border-2 border-zinc-200 focus:border-black rounded-2xl text-lg font-black outline-none transition-all text-black shadow-sm placeholder:text-zinc-400"
                 placeholder="Shop Name"
               />
             </div>
             <div className="flex flex-col gap-1.5 opacity-60">
-              <label className="text-[10px] font-bold text-black uppercase tracking-wider pl-1 font-sans">Store Link</label>
-              <div className="w-full p-4 bg-zinc-50 rounded-xl text-sm font-medium text-zinc-500 flex items-center gap-2 border border-zinc-100">
-                <Globe className="w-4 h-4" />
-                gully.app/{shopName.toLowerCase().replace(/\s+/g, '-')}
+              <label className="text-[10px] font-black text-black uppercase tracking-wider pl-1 font-sans">Store Link</label>
+              <div className="w-full h-16 px-6 bg-zinc-50 rounded-2xl text-sm font-black text-zinc-600 flex items-center gap-2 border border-zinc-200">
+                <Globe className="w-4 h-4" strokeWidth={2.5} />
+                {host}/{shopName.toLowerCase().replace(/\s+/g, '-')}
               </div>
             </div>
           </div>
@@ -87,29 +162,29 @@ export default function ProfilePage() {
         {/* Payout Section */}
         <section className="flex flex-col gap-4">
           <div className="flex items-center gap-2 mb-1">
-            <MapPin className="w-4 h-4 text-zinc-400" />
-            <h2 className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Payments & Logistics</h2>
+            <MapPin className="w-4 h-4 text-zinc-400" strokeWidth={2.5} />
+            <h2 className="text-[10px] font-black text-zinc-600 uppercase tracking-[0.2em]">Payments & Logistics</h2>
           </div>
           <div className="flex flex-col gap-4">
             <div className="flex flex-col gap-1.5">
-              <label className="text-[10px] font-bold text-black uppercase tracking-wider pl-1">UPI ID (VPA)</label>
+              <label className="text-[10px] font-black text-black uppercase tracking-wider pl-1">UPI ID (VPA)</label>
               <input 
                 type="text" 
                 value={upiId} 
                 onChange={(e) => setUpiId(e.target.value)}
-                className="w-full p-4 bg-zinc-50 border border-transparent focus:border-black rounded-xl text-base font-bold outline-none transition-all text-uber-green"
+                className="w-full h-18 px-6 bg-white border-2 border-zinc-200 focus:border-black rounded-2xl text-lg font-black outline-none transition-all text-uber-green shadow-sm placeholder:text-zinc-400"
                 placeholder="name@upi"
               />
             </div>
             <div className="flex flex-col gap-3">
-              <label className="text-[10px] font-bold text-black uppercase tracking-wider pl-1">Delivery Pincodes</label>
+              <label className="text-[10px] font-black text-black uppercase tracking-wider pl-1">Delivery Pincodes</label>
               <div className="relative">
-                <Plus className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-black" />
+                <Plus className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-black" strokeWidth={2.5} />
                 <input 
                   type="tel" 
                   value={pincode}
                   onChange={(e) => handleAddPincode(e.target.value)}
-                  className="w-full p-4 pl-12 bg-zinc-50 border border-transparent focus:border-black rounded-xl text-base font-bold outline-none transition-all text-black"
+                  className="w-full h-18 px-6 pl-14 bg-white border-2 border-zinc-200 focus:border-black rounded-2xl text-lg font-black outline-none transition-all text-black shadow-sm placeholder:text-zinc-400"
                   placeholder="Add 6-digit pincode"
                 />
               </div>
@@ -121,11 +196,11 @@ export default function ProfilePage() {
                       initial={{ opacity: 0, scale: 0.9 }}
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.9 }}
-                      className="bg-black text-white px-3 py-1.5 rounded-lg flex items-center gap-2 text-xs font-bold"
+                      className="bg-black text-white pl-4 pr-1.5 py-1.5 rounded-full flex items-center gap-2 text-xs font-black shadow-md border border-white/10"
                     >
-                      {pin}
-                      <button onClick={() => setSelectedPincodes(selectedPincodes.filter(p => p !== pin))}>
-                        <X className="w-3 h-3 text-white/50 hover:text-white" />
+                      <span className="tracking-widest">{pin}</span>
+                      <button onClick={() => setSelectedPincodes(selectedPincodes.filter(p => p !== pin))} className="w-7 h-7 flex items-center justify-center rounded-full bg-white/20 hover:bg-white/30 transition-colors">
+                        <X className="w-4 h-4 text-white" />
                       </button>
                     </motion.div>
                   ))}
@@ -135,9 +210,9 @@ export default function ProfilePage() {
           </div>
         </section>
 
-        <button onClick={() => router.push('/login')} className="w-full bg-red-50/50 border border-red-100 text-red-500 py-4 rounded-xl font-black uppercase tracking-widest text-[10px] flex items-center justify-center gap-3 active:scale-[0.98] transition-all mt-4">
-          <LogOut className="w-4 h-4" />
-          Sign Out from Gully Commerce
+        <button onClick={handleSignOut} className="w-full bg-red-50 text-red-600 h-16 rounded-2xl font-black text-sm flex items-center justify-center gap-3 active:scale-[0.98] transition-all mt-4 border border-red-100 shadow-xl shadow-red-500/5">
+          <LogOut className="w-5 h-5" strokeWidth={2.5} />
+          Sign Out
         </button>
       </main>
     </div>

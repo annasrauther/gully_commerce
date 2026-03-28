@@ -1,11 +1,13 @@
 import type { Metadata, Viewport } from "next";
+import { ClerkProvider } from "@clerk/nextjs";
 import { DM_Sans } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "react-hot-toast";
+import BottomNav from "@/components/BottomNav";
 
 const dmSans = DM_Sans({
   subsets: ["latin"],
-  weight: ["400", "500", "700"],
+  weight: ["400", "500", "700", "900"],
   variable: "--font-dm-sans",
 });
 
@@ -33,16 +35,19 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      className={`${dmSans.variable} h-full antialiased`}
-    >
-      <body className="min-h-full flex flex-col font-sans select-none touch-pan-y active:bg-transparent">
-        <main className="flex-1 flex flex-col">
-          {children}
-        </main>
-        <Toaster position="bottom-center" />
-      </body>
-    </html>
+    <ClerkProvider>
+      <html
+        lang="en"
+        className={`${dmSans.variable} h-full antialiased`}
+      >
+        <body className="min-h-full flex flex-col font-sans select-none touch-pan-y active:bg-transparent">
+          <main className="flex-1 flex flex-col pb-24">
+            {children}
+          </main>
+          <BottomNav />
+          <Toaster position="bottom-center" />
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }
